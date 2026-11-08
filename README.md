@@ -207,7 +207,13 @@ Node.js ≥ 18（你机器上是 v22，够用）。无需 `npm install`。
 
 ### 1. 填配置
 
-编辑 `config.json`：
+仓库里没有 `config.json`（真实配置含密钥，不提交）。先复制一份：
+
+```powershell
+Copy-Item config.example.json config.json
+```
+
+再编辑 `config.json`：
 
 ```jsonc
 "providers": {
@@ -215,7 +221,7 @@ Node.js ≥ 18（你机器上是 v22，够用）。无需 `npm install`。
 }
 ```
 
-顺手把 `server.adminToken` 换成自己的（8 位以上随机串）。
+顺手把 `server.adminToken` 换成自己的（8 位以上随机串），把 `clients[].key` 换成你自己的 key（建议 `sk-gw-` + 随机串，随便生成）。
 
 ### 2. 启动
 
