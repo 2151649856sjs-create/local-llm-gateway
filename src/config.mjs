@@ -23,6 +23,20 @@ export const DEFAULTS = {
     unknownModelPolicy: 'fallback', // fallback | reject
     defaultProvider: null, // 无 model 字段的请求（/models 等）走这里
   },
+  // 上游桥接子进程（如 Qoder 协议转换器）：网关负责拉起 + 健康看护
+  bridge: {
+    enabled: false,
+    command: null, // 例: "python"
+    args: [], // 例: ["qoder_proxy.py", "--port", "8790"]
+    cwd: '.', // 相对项目根目录
+    healthUrl: null, // 例: "http://127.0.0.1:8790/health"
+    watchIntervalMs: 15000,
+    failThreshold: 2,
+    startupTimeoutMs: 40000,
+    restartDelayMs: 3000,
+    maxRestarts: 10,
+    restartWindowMs: 600000,
+  },
   providers: {},
   routes: [{ match: '*', provider: 'default' }],
   pricing: { '*': { in: 0, out: 0 } },

@@ -19,6 +19,7 @@ import { authenticate, checkQuota, modelAllowed, allPeriodKeys } from './auth.mj
 import { computeCost, estimateTokens, normalizeUsage, resolvePrice } from './metering.mjs';
 import { forward, routeProvider } from './proxy.mjs';
 import { createAdmin } from './admin.mjs';
+import { createBridgeSupervisor } from './bridge.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -370,6 +371,11 @@ const server = http.createServer((req, res) => {
   res.setHeader('access-control-expose-headers', '*');
 
   if (url.pathname === '/health' || url.pathname === '/') {
+    let bridgeHealth = null;
+    if (bridge?.enabled) {
+      bridge.refresh?.();
+      bridgeHealth = bridge.info();
+    }
     return sendJson(res, 200, {
       ok: true,
       service: 'local-llm-gateway',
@@ -377,6 +383,7 @@ const server = http.createServer((req, res) => {
       clients: ctx.cfg.clients.length,
       providers: Object.keys(ctx.cfg.providers),
       basePath: ctx.cfg.proxy.basePath,
+      bridge: bridgeHealth,
     });
   }
 
@@ -407,6 +414,7 @@ server.on('clientError', (err, socket) => {
 });
 
 const { host, port } = ctx.cfg.server;
+let bridge = null;
 server.listen(port, host, () => {
   console.log(`
 ┌──────────────────────────────────────────────┐
@@ -419,6 +427,12 @@ server.listen(port, host, () => {
   调用方    ${ctx.cfg.clients.map((c) => `${c.id}(${c.type})`).join('  ')}
   数据目录  ${dataDir}
 `);
+
+  // 桥接子进程：不阻塞监听，后台拉起
+  bridge = createBridgeSupervisor({ cfg: ctx.cfg, root: ROOT });
+  if (bridge.enabled) {
+    bridge.start().catch((e) => console.warn(`[bridge] 启动异常: ${e.message}`));
+  }
 });
 
 /* ---------------- 优雅退出 ---------------- */
@@ -427,6 +441,11 @@ function shutdown(sig) {
   if (closing) return;
   closing = true;
   console.log(`\n[gw] 收到 ${sig}，正在落盘并退出…`);
+  try {
+    bridge?.stop();
+  } catch {
+    /* ignore */
+  }
   server.close(() => {
     store.flush();
     process.exit(0);
