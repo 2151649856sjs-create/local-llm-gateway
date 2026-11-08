@@ -1,0 +1,18 @@
+{
+  "name": "local-llm-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "description": "本地自建的上游模型/API 中转网关：多 agent 额度管理 + 通用 key 分发",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "dev": "node --watch src/server.mjs",
+    "test": "node test/smoke.mjs",
+    "mock": "node test/mock-upstream.mjs",
+    "cli": "node src/cli.mjs"
+  },
+  "dependencies": {}
+}

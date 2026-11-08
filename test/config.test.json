@@ -1,0 +1,62 @@
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8788,
+    "adminToken": "test-admin-token-123",
+    "maxBodyBytes": 1048576,
+    "requestTimeoutMs": 15000
+  },
+  "proxy": {
+    "basePath": "/v1",
+    "currency": "CNY",
+    "injectStreamUsage": true,
+    "estimateCharsPerToken": 3.5
+  },
+  "providers": {
+    "mock": {
+      "baseUrl": "http://127.0.0.1:9999/v1",
+      "apiKey": "sk-mock-upstream",
+      "timeoutMs": 10000
+    }
+  },
+  "routes": [{ "match": "*", "provider": "mock" }],
+  "pricing": { "*": { "in": 2, "out": 8 } },
+  "clients": [
+    {
+      "id": "t-normal",
+      "name": "测试-正常",
+      "type": "agent",
+      "key": "sk-test-normal",
+      "quota": { "period": "total", "tokens": 1000000 },
+      "limits": { "rpm": 100, "maxConcurrent": 4 },
+      "models": { "allow": ["*"] }
+    },
+    {
+      "id": "t-quota",
+      "name": "测试-额度很少",
+      "type": "agent",
+      "key": "sk-test-quota",
+      "quota": { "period": "total", "tokens": 30 },
+      "limits": { "rpm": 100 },
+      "models": { "allow": ["*"] }
+    },
+    {
+      "id": "t-rpm",
+      "name": "测试-限流",
+      "type": "agent",
+      "key": "sk-test-rpm",
+      "quota": { "period": "total", "tokens": 1000000 },
+      "limits": { "rpm": 2, "maxConcurrent": 1 },
+      "models": { "allow": ["*"] }
+    },
+    {
+      "id": "t-model",
+      "name": "测试-模型白名单",
+      "type": "generic",
+      "key": "sk-test-model",
+      "quota": { "period": "total", "tokens": 1000000 },
+      "limits": { "rpm": 100 },
+      "models": { "allow": ["mock-allowed"] }
+    }
+  ]
+}

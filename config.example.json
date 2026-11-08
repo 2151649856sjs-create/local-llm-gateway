@@ -1,0 +1,275 @@
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8787,
+    "adminToken": "CHANGE-ME-AT-LEAST-8-CHARS",
+    "maxBodyBytes": 10485760,
+    "requestTimeoutMs": 300000,
+    "trustProxy": false
+  },
+  "proxy": {
+    "basePath": "/v1",
+    "currency": "CNY",
+    "injectStreamUsage": true,
+    "estimateCharsPerToken": 3.5,
+    "unknownModelPolicy": "fallback",
+    "defaultProvider": "qoder"
+  },
+  "providers": {
+    "qoder": {
+      "baseUrl": "http://127.0.0.1:8790/v1",
+      "apiKey": "local-bridge",
+      "timeoutMs": 300000,
+      "headers": {}
+    },
+    "deepseek": {
+      "baseUrl": "https://api.deepseek.com/v1",
+      "apiKey": "sk-REPLACE_WITH_YOUR_DEEPSEEK_KEY",
+      "timeoutMs": 180000,
+      "headers": {}
+    },
+    "mock": {
+      "baseUrl": "http://127.0.0.1:9999/v1",
+      "apiKey": "sk-mock-upstream",
+      "timeoutMs": 30000,
+      "headers": {}
+    }
+  },
+  "routes": [
+    {
+      "match": "Auto",
+      "provider": "qoder"
+    },
+    {
+      "match": "Fast",
+      "provider": "qoder"
+    },
+    {
+      "match": "QoDuck",
+      "provider": "qoder"
+    },
+    {
+      "match": "Qwen3*",
+      "provider": "qoder"
+    },
+    {
+      "match": "DeepSeek-V*",
+      "provider": "qoder"
+    },
+    {
+      "match": "DeepSeek-Flash",
+      "provider": "qoder"
+    },
+    {
+      "match": "GLM-*",
+      "provider": "qoder"
+    },
+    {
+      "match": "Kimi-*",
+      "provider": "qoder"
+    },
+    {
+      "match": "MiniMax-*",
+      "provider": "qoder"
+    },
+    {
+      "match": "Step-*",
+      "provider": "qoder"
+    },
+    {
+      "match": "mock-*",
+      "provider": "mock"
+    },
+    {
+      "match": "*",
+      "provider": "deepseek"
+    }
+  ],
+  "pricing": {
+    "deepseek-chat": {
+      "in": 2,
+      "out": 8
+    },
+    "deepseek-reasoner": {
+      "in": 4,
+      "out": 16
+    },
+    "Auto": {
+      "in": 0,
+      "out": 0
+    },
+    "Fast": {
+      "in": 0,
+      "out": 0
+    },
+    "QoDuck": {
+      "in": 0,
+      "out": 0
+    },
+    "Qwen3*": {
+      "in": 0,
+      "out": 0
+    },
+    "DeepSeek-V*": {
+      "in": 0,
+      "out": 0
+    },
+    "DeepSeek-Flash": {
+      "in": 0,
+      "out": 0
+    },
+    "GLM-*": {
+      "in": 0,
+      "out": 0
+    },
+    "Kimi-*": {
+      "in": 0,
+      "out": 0
+    },
+    "MiniMax-*": {
+      "in": 0,
+      "out": 0
+    },
+    "Step-*": {
+      "in": 0,
+      "out": 0
+    },
+    "*": {
+      "in": 2,
+      "out": 8
+    }
+  },
+  "clients": [
+    {
+      "id": "agent-researcher",
+      "name": "调研 Agent",
+      "type": "agent",
+      "key": "sk-gw-REPLACE-ME-1",
+      "enabled": true,
+      "quota": {
+        "period": "daily",
+        "tokens": 200000,
+        "requests": 2000,
+        "cost": 5
+      },
+      "limits": {
+        "rpm": 60,
+        "tpm": 60000,
+        "maxConcurrent": 4
+      },
+      "models": {
+        "allow": [
+          "deepseek-*",
+          "mock-*",
+          "Qwen3.8-Flash",
+          "GLM-5.3-Flash"
+        ]
+      }
+    },
+    {
+      "id": "agent-coder",
+      "name": "编码 Agent",
+      "type": "agent",
+      "key": "sk-gw-REPLACE-ME-2",
+      "enabled": true,
+      "quota": {
+        "period": "monthly",
+        "tokens": 5000000,
+        "cost": 80
+      },
+      "limits": {
+        "rpm": 120,
+        "tpm": 120000,
+        "maxConcurrent": 8
+      },
+      "models": {
+        "allow": [
+          "*"
+        ],
+        "deny": [
+          "deepseek-reasoner"
+        ]
+      }
+    },
+    {
+      "id": "shared-desk",
+      "name": "通用调用 key",
+      "type": "generic",
+      "key": "sk-gw-REPLACE-ME-3",
+      "enabled": true,
+      "quota": {
+        "period": "monthly",
+        "cost": 20
+      },
+      "limits": {
+        "rpm": 30,
+        "maxConcurrent": 2
+      },
+      "models": {
+        "allow": [
+          "*"
+        ]
+      }
+    },
+    {
+      "id": "qoder-agent",
+      "name": "Qoder 额度专用",
+      "type": "agent",
+      "key": "sk-gw-REPLACE-ME-4",
+      "enabled": true,
+      "quota": {
+        "period": "daily",
+        "credits": 5,
+        "requests": 500
+      },
+      "limits": {
+        "rpm": 20,
+        "maxConcurrent": 2
+      },
+      "models": {
+        "allow": [
+          "Auto",
+          "Fast",
+          "QoDuck",
+          "Qwen3*",
+          "DeepSeek-V*",
+          "DeepSeek-Flash",
+          "GLM-*",
+          "Kimi-*",
+          "MiniMax-*",
+          "Step-*"
+        ]
+      }
+    },
+    {
+      "id": "workbuddy",
+      "name": "WorkBuddy 客户端",
+      "type": "agent",
+      "key": "sk-gw-REPLACE-ME-5",
+      "enabled": true,
+      "quota": {
+        "period": "daily",
+        "credits": 30,
+        "requests": 3000
+      },
+      "limits": {
+        "rpm": 120,
+        "maxConcurrent": 8
+      },
+      "models": {
+        "allow": [
+          "Auto",
+          "Fast",
+          "QoDuck",
+          "Qwen3*",
+          "DeepSeek-V*",
+          "DeepSeek-Flash",
+          "GLM-*",
+          "Kimi-*",
+          "MiniMax-*",
+          "Step-*"
+        ]
+      }
+    }
+  ]
+}
